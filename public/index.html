@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jeu 2D Plateforme</title>
+  <style>
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #aef;
+    }
+    form {
+      text-align: center;
+      margin-top: 10px;
+    }
+    input {
+      margin: 5px;
+      padding: 6px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🔐 Formulaires -->
+  <div id="authContainer" style="text-align: center">
+    <form id="loginForm">
+      <input type="text" id="loginUser" placeholder="Pseudo" required />
+      <input type="password" id="loginPass" placeholder="Mot de passe" required />
+      <button type="submit">Connexion</button>
+      <br />
+      <small><a href="#" id="showSignup">Créer un compte</a></small>
+    </form>
+
+    <form id="signupForm" style="display:none">
+      <input type="text" id="signupUser" placeholder="Pseudo" required />
+      <input type="password" id="signupPass" placeholder="Mot de passe" required />
+      <button type="submit">S'inscrire</button>
+      <br />
+      <small><a href="#" id="showLogin">J’ai déjà un compte</a></small>
+    </form>
+  </div>
+
+  <canvas id="gameCanvas" width="1024" height="576"></canvas>
+  <script type="module" src="./main.js"></script>
+
+  <script>
+    let currentUsername = '';
+
+    // 🔄 Alternance entre login/signup
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    document.getElementById('showSignup').onclick = () => {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'inline';
+    };
+    document.getElementById('showLogin').onclick = () => {
+      signupForm.style.display = 'none';
+      loginForm.style.display = 'inline';
+    };
+
+    // 🔐 Login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUser').value;
+      const password = document.getElementById('loginPass').value;
+
+      const res = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        currentUsername = data.username;
+        document.getElementById('authContainer').style.display = 'none';
+      } else {
+        alert(data.message);
+      }
+    });
+
+    // 📝 Signup
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('signupUser').value;
+      const password = document.getElementById('signupPass').value;
+
+      const res = await fetch('http://localhost:3000/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert('Compte créé, connecte-toi maintenant');
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'inline';
+      } else {
+        alert(data.message);
+      }
+    });
+
+    window.getUsername = () => currentUsername;
+  </script>
+</body>
+</html>
