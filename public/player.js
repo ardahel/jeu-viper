@@ -7,7 +7,7 @@ export const player = {
   height: 40,
   velocityX: 0,
   velocityY: 0,
-  speed: 2.5, // remis à la vitesse fluide d'origine
+  speed: 2.5,
   jumpPower: -12,
   grounded: false,
   color: 'red'
@@ -20,7 +20,8 @@ export const keys = {
 };
 
 export function updatePlayer(player, gravity, platforms, keys, canvasHeight) {
-  player.velocityY += gravity;
+  // ⬇️ ralentit la chute
+  player.velocityY += gravity * 0.6;
   player.grounded = false;
 
   player.x += player.velocityX;
