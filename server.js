@@ -40,9 +40,7 @@ io.on('connection', (socket) => {
   console.log(`🟢 Player connected: ${socket.id}`);
 
   socket.on('register', (data) => {
-    const username = typeof data.username === 'string' && data.username.trim() !== ''
-      ? data.username
-      : `guest_${Math.floor(Math.random() * 1000)}`;
+    const username = typeof data.username === 'string' && data.username.trim() !== '' ? data.username : `guest_${Math.floor(Math.random() * 1000)}`;
     players[socket.id] = {
       username,
       x: 100,
@@ -59,8 +57,13 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('chatMessage', ({ username, message }) => {
-    io.emit('chatMessage', { username, message });
+  socket.on('chatMessage', (msg) => {
+    if (players[socket.id]) {
+      io.emit('chatMessage', {
+        username: players[socket.id].username,
+        message: msg
+      });
+    }
   });
 
   socket.on('disconnect', () => {
