@@ -1,17 +1,17 @@
 // player.js
 
-export const player = {
+export const player = Object.freeze({
   x: 100,
   y: 100,
   width: 40,
   height: 40,
   velocityX: 0,
   velocityY: 0,
-  speed: 2.5,
+  speed: 3,
   jumpPower: -12,
   grounded: false,
   color: 'red'
-};
+});
 
 export const keys = {
   ArrowLeft: false,
@@ -20,8 +20,7 @@ export const keys = {
 };
 
 export function updatePlayer(player, gravity, platforms, keys, canvasHeight) {
-  // ⬇️ ralentit la chute
-  player.velocityY += gravity * 0.6;
+  player.velocityY += gravity;
   player.grounded = false;
 
   player.x += player.velocityX;

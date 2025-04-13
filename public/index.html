@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <title>Jeu 2D Plateforme</title>
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
     canvas {
       display: block;
       margin: 0 auto;
@@ -27,6 +32,7 @@
       border: 1px solid #ccc;
       display: flex;
       flex-direction: column;
+      z-index: 10;
     }
     #chat-messages {
       flex: 1;
@@ -69,7 +75,13 @@
     <input type="text" id="chat-input" placeholder="Taper un message..." />
   </div>
 
-  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script type="module" src="./main.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    Object.freeze(window);
+    Object.freeze(Object);
+    Object.freeze(console);
+    console.clear();
+  </script>
 </body>
 </html>
