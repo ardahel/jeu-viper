@@ -39,6 +39,26 @@
       border-top: 1px solid #ccc;
       padding: 5px;
     }
+    .speech-bubble {
+      position: absolute;
+      padding: 4px 8px;
+      background: white;
+      border: 1px solid #999;
+      border-radius: 10px;
+      font-size: 12px;
+      max-width: 200px;
+      text-align: center;
+      transform: translateX(-50%);
+      animation: fadeout 4s forwards;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    @keyframes fadeout {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
