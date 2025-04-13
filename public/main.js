@@ -59,6 +59,25 @@ function initSocket() {
       }
     }
   });
+
+  socket.on('chatMessage', ({ username, message }) => {
+    const log = document.getElementById('chatLog');
+    const msg = document.createElement('div');
+    msg.textContent = `${username} : ${message}`;
+    log.appendChild(msg);
+    log.scrollTop = log.scrollHeight;
+  });
+
+  const input = document.getElementById('chatInput');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && input.value.trim() !== '') {
+      socket.emit('chatMessage', {
+        username: currentUsername,
+        message: input.value.trim()
+      });
+      input.value = '';
+    }
+  });
 }
 
 setupKeyboard(keys);
