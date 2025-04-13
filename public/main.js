@@ -12,7 +12,6 @@ let currentUsername = '';
 
 function update() {
   updatePlayer(player, gravity, platforms, keys, canvas.height);
-
   if (socket) {
     socket.emit('move', {
       x: player.x,
@@ -24,11 +23,9 @@ function update() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   if (bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
-
   for (const p of Object.values(otherPlayers)) {
     ctx.fillStyle = 'blue';
     ctx.fillRect(p.x, p.y, player.width, player.height);
@@ -36,7 +33,6 @@ function draw() {
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
   }
-
   drawPlayer(ctx, player, currentUsername);
 }
 
@@ -44,6 +40,12 @@ function loop() {
   update();
   draw();
   requestAnimationFrame(loop);
+}
+
+function startGameAfterLogin() {
+  document.getElementById('authContainer').style.display = 'none';
+  initSocket();
+  loop();
 }
 
 function initSocket() {
@@ -63,7 +65,7 @@ function initSocket() {
   socket.on('chatMessage', ({ username, message }) => {
     const log = document.getElementById('chatLog');
     const msg = document.createElement('div');
-    msg.textContent = `${username}: ${message}`;
+    msg.textContent = `${username} : ${message}`;
     log.appendChild(msg);
     log.scrollTop = log.scrollHeight;
   });
@@ -71,10 +73,9 @@ function initSocket() {
   const input = document.getElementById('chatInput');
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && input.value.trim() !== '') {
-      const msg = input.value.trim();
       socket.emit('chatMessage', {
         username: currentUsername,
-        message: msg
+        message: input.value.trim()
       });
       input.value = '';
     }
@@ -82,18 +83,6 @@ function initSocket() {
 }
 
 setupKeyboard(keys);
-
-// Déplacement dans bgImage.onload APRES connexion
-function startGameAfterLogin() {
-  bgImage.onload = () => {
-    initSocket();
-    loop();
-  };
-  if (bgImage.complete) {
-    initSocket();
-    loop();
-  }
-}
 
 // Login/signup handlers
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -110,7 +99,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const data = await res.json();
   if (res.ok) {
     currentUsername = data.username;
-    document.getElementById('authContainer').style.display = 'none';
     startGameAfterLogin();
   } else {
     alert(data.message);
