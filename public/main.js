@@ -61,7 +61,7 @@ function initSocket() {
   });
 
   socket.on('chatMessage', ({ username, message }) => {
-    const log = document.getElementById('chatLog');
+    const log = document.getElementById('chat-messages');
     if (log) {
       const msg = document.createElement('div');
       msg.textContent = `${username}: ${message}`;
@@ -70,14 +70,11 @@ function initSocket() {
     }
   });
 
-  const input = document.getElementById('chatInput');
+  const input = document.getElementById('chat-input');
   if (input) {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && input.value.trim() !== '') {
-        socket.emit('chatMessage', {
-          username: currentUsername,
-          message: input.value.trim()
-        });
+        socket.emit('chatMessage', input.value.trim());
         input.value = '';
       }
     });
