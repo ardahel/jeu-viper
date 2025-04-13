@@ -7,7 +7,7 @@ export const player = {
   height: 40,
   velocityX: 0,
   velocityY: 0,
-  speed: 2,
+  speed: 2.5, // remis à la vitesse fluide d'origine
   jumpPower: -12,
   grounded: false,
   color: 'red'
