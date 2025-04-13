@@ -9,37 +9,17 @@ const ctx = canvas.getContext('2d');
 let socket;
 let otherPlayers = {};
 let currentUsername = '';
+const chatBubbles = {}; // ID -> { text, timer }
 
 function update() {
   updatePlayer(player, gravity, platforms, keys, canvas.height);
-
   if (socket) {
     socket.emit('move', {
       x: player.x,
       y: player.y,
-      username: currentUsername,
-      chatMessage: player.chatMessage || ''
+      username: currentUsername
     });
   }
-}
-
-function drawBubble(ctx, text, x, y) {
-  ctx.font = '12px Arial';
-  const padding = 6;
-  const textWidth = ctx.measureText(text).width;
-  const bubbleWidth = textWidth + padding * 2;
-  const bubbleHeight = 24;
-
-  ctx.fillStyle = 'white';
-  ctx.strokeStyle = 'black';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.roundRect(x - bubbleWidth / 2, y - 40, bubbleWidth, bubbleHeight, 8);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = 'black';
-  ctx.fillText(text, x - textWidth / 2, y - 24);
 }
 
 function draw() {
@@ -47,22 +27,35 @@ function draw() {
   if (bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
-
-  for (const p of Object.values(otherPlayers)) {
+  for (const [id, p] of Object.entries(otherPlayers)) {
     ctx.fillStyle = 'blue';
     ctx.fillRect(p.x, p.y, player.width, player.height);
     ctx.fillStyle = 'black';
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
-    if (p.chatMessage) {
-      drawBubble(ctx, p.chatMessage, p.x + player.width / 2, p.y);
+    if (chatBubbles[id]) {
+      drawBubble(p.x, p.y - 35, chatBubbles[id].text);
     }
   }
-
   drawPlayer(ctx, player, currentUsername);
-  if (player.chatMessage) {
-    drawBubble(ctx, player.chatMessage, player.x + player.width / 2, player.y);
-  }
+}
+
+function drawBubble(x, y, text) {
+  ctx.font = '12px Arial';
+  const padding = 6;
+  const maxWidth = 120;
+  const metrics = ctx.measureText(text);
+  const width = Math.min(metrics.width, maxWidth) + padding * 2;
+  const height = 24;
+  ctx.fillStyle = 'white';
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(x + player.width / 2 - width / 2, y, width, height, 6);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = 'black';
+  ctx.fillText(text, x + player.width / 2 - width / 2 + padding, y + 16);
 }
 
 function loop() {
@@ -84,7 +77,7 @@ function initSocket() {
     }
   });
 
-  socket.on('chatMessage', ({ username, message }) => {
+  socket.on('chatMessage', ({ username, message, id }) => {
     const log = document.getElementById('chat-messages');
     if (log) {
       const msg = document.createElement('div');
@@ -92,21 +85,9 @@ function initSocket() {
       log.appendChild(msg);
       log.scrollTop = log.scrollHeight;
     }
-
-    if (username === currentUsername) {
-      player.chatMessage = message;
-      clearTimeout(player.chatTimer);
-      player.chatTimer = setTimeout(() => (player.chatMessage = ''), 3000);
-    } else {
-      for (let id in otherPlayers) {
-        if (otherPlayers[id].username === username) {
-          otherPlayers[id].chatMessage = message;
-          clearTimeout(otherPlayers[id].chatTimer);
-          otherPlayers[id].chatTimer = setTimeout(() => {
-            if (otherPlayers[id]) otherPlayers[id].chatMessage = '';
-          }, 3000);
-        }
-      }
+    if (id) {
+      chatBubbles[id] = { text: message, timer: Date.now() };
+      setTimeout(() => delete chatBubbles[id], 3000);
     }
   });
 
@@ -115,7 +96,11 @@ function initSocket() {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && input.value.trim() !== '') {
         const message = input.value.trim();
-        socket.emit('chatMessage', { username: currentUsername, message });
+        socket.emit('chatMessage', {
+          username: currentUsername,
+          message,
+          id: socket.id
+        });
         input.value = '';
       }
     });
