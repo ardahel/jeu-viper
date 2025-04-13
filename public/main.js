@@ -43,19 +43,23 @@ function draw() {
 function drawBubble(x, y, text) {
   ctx.font = '12px Arial';
   const padding = 6;
-  const maxWidth = 120;
-  const metrics = ctx.measureText(text);
-  const width = Math.min(metrics.width, maxWidth) + padding * 2;
-  const height = 24;
+  const maxWidth = 160;
+  const textWidth = Math.min(ctx.measureText(text).width, maxWidth);
+  const bubbleWidth = textWidth + padding * 2;
+  const bubbleHeight = 20;
+  const bubbleX = x + player.width / 2 - bubbleWidth / 2;
+  const bubbleY = y - 8;
+
   ctx.fillStyle = 'white';
   ctx.strokeStyle = '#333';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.roundRect(x + player.width / 2 - width / 2, y, width, height, 6);
+  ctx.rect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
   ctx.fill();
   ctx.stroke();
+
   ctx.fillStyle = 'black';
-  ctx.fillText(text, x + player.width / 2 - width / 2 + padding, y + 16);
+  ctx.fillText(text, bubbleX + padding, bubbleY + 14);
 }
 
 function loop() {
