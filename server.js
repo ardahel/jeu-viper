@@ -1,10 +1,22 @@
 import express from 'express';
 import cors from 'cors';
-import connectDB from './db.js'; // 👉 Connexion MongoDB
+import http from 'http';
+import { Server } from 'socket.io';
+import connectDB from './db.js';
 import setupSignupRoute from './signup/signup.js';
 import setupLoginRoute from './login/login.js';
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: 'https://jeu-viper.onrender.com',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 // 🌍 CORS config pour frontend Render
@@ -17,7 +29,7 @@ app.use(cors({
 
 app.use(express.json());
 
-await connectDB(); // 👉 Appelle la connexion MongoDB ici
+await connectDB();
 
 // 🚏 monte les routes
 setupSignupRoute(app);
@@ -26,6 +38,32 @@ setupLoginRoute(app);
 // 🎯 sert le dossier public avec le jeu HTML
 app.use(express.static('public'));
 
-app.listen(PORT, () => {
-  console.log(`✅ Serveur démarré : http://localhost:${PORT}`);
+// 🎮 WebSocket multijoueur
+const players = {};
+
+io.on('connection', (socket) => {
+  console.log(`🟢 Player connected: ${socket.id}`);
+
+  socket.on('register', (data) => {
+    players[socket.id] = { username: data.username, x: 100, y: 100 };
+    io.emit('playersUpdate', players);
+  });
+
+  socket.on('move', (pos) => {
+    if (players[socket.id]) {
+      players[socket.id].x = pos.x;
+      players[socket.id].y = pos.y;
+      io.emit('playersUpdate', players);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`🔴 Player disconnected: ${socket.id}`);
+    delete players[socket.id];
+    io.emit('playersUpdate', players);
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`✅ Serveur Web + Socket lancé sur : http://localhost:${PORT}`);
 });
