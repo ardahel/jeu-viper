@@ -7,7 +7,7 @@ export const player = {
   height: 40,
   velocityX: 0,
   velocityY: 0,
-  speed: 4,
+  speed: 2,
   jumpPower: -12,
   grounded: false,
   color: 'red'
