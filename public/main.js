@@ -12,7 +12,6 @@ let currentUsername = '';
 
 function update() {
   updatePlayer(player, gravity, platforms, keys, canvas.height);
-
   if (socket) {
     socket.emit('move', {
       x: player.x,
@@ -24,11 +23,9 @@ function update() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   if (bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
-
   for (const p of Object.values(otherPlayers)) {
     ctx.fillStyle = 'blue';
     ctx.fillRect(p.x, p.y, player.width, player.height);
@@ -36,7 +33,6 @@ function draw() {
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
   }
-
   drawPlayer(ctx, player, currentUsername);
 }
 
@@ -48,7 +44,6 @@ function loop() {
 
 function initSocket() {
   socket = io();
-
   socket.emit('register', { username: currentUsername });
 
   socket.on('playersUpdate', (players) => {
