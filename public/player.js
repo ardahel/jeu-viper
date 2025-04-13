@@ -1,6 +1,6 @@
 // player.js
 
-export const player = Object.freeze({
+export const player = {
   x: 100,
   y: 100,
   width: 40,
@@ -11,7 +11,7 @@ export const player = Object.freeze({
   jumpPower: -12,
   grounded: false,
   color: 'red'
-});
+};
 
 export const keys = {
   ArrowLeft: false,

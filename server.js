@@ -35,9 +35,6 @@ setupLoginRoute(app);
 app.use(express.static('public'));
 
 const players = {};
-const gravity = 0.4;
-const speed = 3;
-const jumpPower = -12;
 
 io.on('connection', (socket) => {
   console.log(`🟢 Player connected: ${socket.id}`);
@@ -47,46 +44,18 @@ io.on('connection', (socket) => {
     players[socket.id] = {
       username,
       x: 100,
-      y: 100,
-      velocityX: 0,
-      velocityY: 0,
-      grounded: false,
-      keys: {}
+      y: 100
     };
     io.emit('playersUpdate', players);
   });
 
-  socket.on('keyInput', (keys) => {
+  socket.on('move', (pos) => {
     if (players[socket.id]) {
-      players[socket.id].keys = keys;
+      players[socket.id].x = pos.x;
+      players[socket.id].y = pos.y;
+      io.emit('playersUpdate', players);
     }
   });
-
-  setInterval(() => {
-    for (const [id, player] of Object.entries(players)) {
-      player.velocityY += gravity;
-      player.grounded = false;
-
-      if (player.keys?.ArrowLeft) player.velocityX = -speed;
-      else if (player.keys?.ArrowRight) player.velocityX = speed;
-      else player.velocityX = 0;
-
-      player.x += player.velocityX;
-      player.y += player.velocityY;
-
-      if (player.y >= 520 - player.height) { // sol
-        player.y = 520 - player.height;
-        player.velocityY = 0;
-        player.grounded = true;
-      }
-
-      if (player.keys?.ArrowUp && player.grounded) {
-        player.velocityY = jumpPower;
-        player.grounded = false;
-      }
-    }
-    io.emit('playersUpdate', players);
-  }, 1000 / 60);
 
   socket.on('chatMessage', (msg) => {
     const username = players[socket.id]?.username || '???';

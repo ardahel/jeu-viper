@@ -86,17 +86,13 @@ function startGameAfterLogin() {
   document.getElementById('authContainer').style.display = 'none';
   canvas.style.display = 'block';
   initSocket();
-  bgImage.onload = () => loop();
-  if (bgImage.complete) loop();
+  loop();
 }
 
 setupKeyboard(keys);
+bgImage.onload = () => loop();
 
-// Auth
-const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
-
-loginForm?.addEventListener('submit', async (e) => {
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('loginUser').value;
   const password = document.getElementById('loginPass').value;
@@ -116,7 +112,7 @@ loginForm?.addEventListener('submit', async (e) => {
   }
 });
 
-signupForm?.addEventListener('submit', async (e) => {
+document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('signupUser').value;
   const password = document.getElementById('signupPass').value;
@@ -130,19 +126,19 @@ signupForm?.addEventListener('submit', async (e) => {
   const data = await res.json();
   if (res.ok) {
     alert('Compte créé, connecte-toi maintenant');
-    signupForm.style.display = 'none';
-    loginForm.style.display = 'inline';
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'inline';
   } else {
     alert(data.message);
   }
 });
 
 document.getElementById('showSignup')?.addEventListener('click', () => {
-  loginForm.style.display = 'none';
-  signupForm.style.display = 'inline';
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'inline';
 });
 
 document.getElementById('showLogin')?.addEventListener('click', () => {
-  signupForm.style.display = 'none';
-  loginForm.style.display = 'inline';
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'inline';
 });
