@@ -4,12 +4,17 @@ import connectDB from './db.js'; // 👈 Connexion MongoDB
 import setupSignupRoute from './signup/signup.js';
 import setupLoginRoute from './login/login.js';
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 await connectDB(); // 👈 Appelle la connexion MongoDB ici
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://jeu-viper.onrender.com',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true
+}));
 app.use(express.json());
 
 // 🧩 monte les routes
