@@ -40,8 +40,9 @@ io.on('connection', (socket) => {
   console.log(`🟢 Player connected: ${socket.id}`);
 
   socket.on('register', (data) => {
+    const username = typeof data.username === 'string' ? data.username : `guest_${Math.floor(Math.random() * 1000)}`;
     players[socket.id] = {
-      username: data.username,
+      username,
       x: 100,
       y: 100
     };
@@ -50,12 +51,8 @@ io.on('connection', (socket) => {
 
   socket.on('move', (pos) => {
     if (players[socket.id]) {
-      players[socket.id] = {
-        ...players[socket.id],
-        x: pos.x,
-        y: pos.y,
-        username: pos.username // fix: update username for correct display
-      };
+      players[socket.id].x = pos.x;
+      players[socket.id].y = pos.y;
       io.emit('playersUpdate', players);
     }
   });

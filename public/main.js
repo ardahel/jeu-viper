@@ -1,3 +1,4 @@
+// main.js
 import { player, keys, updatePlayer, drawPlayer } from './player.js';
 import { bgImage, platforms, gravity } from './map.js';
 import { setupKeyboard } from './game.js';
@@ -12,12 +13,14 @@ function update() {
   updatePlayer(player, gravity, platforms, keys, canvas.height);
   socket.emit('move', {
     x: player.x,
-    y: player.y
+    y: player.y,
+    username: getUsername()
   });
 }
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   if (bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
@@ -27,7 +30,7 @@ function draw() {
     ctx.fillRect(p.x, p.y, player.width, player.height);
     ctx.fillStyle = 'black';
     ctx.font = '14px Arial';
-    ctx.fillText(p.username ?? '???', p.x, p.y - 5); // fallback
+    ctx.fillText(p.username || '???', p.x, p.y - 5);
   }
 
   drawPlayer(ctx, player, getUsername());
