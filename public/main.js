@@ -42,15 +42,8 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-function startGameAfterLogin() {
-  document.getElementById('authContainer').style.display = 'none';
-  initSocket();
-  loop();
-}
-
 function initSocket() {
   socket = io();
-
   socket.emit('register', { username: currentUsername });
 
   socket.on('playersUpdate', (players) => {
@@ -65,26 +58,34 @@ function initSocket() {
   socket.on('chatMessage', ({ username, message }) => {
     const log = document.getElementById('chatLog');
     const msg = document.createElement('div');
-    msg.textContent = `${username} : ${message}`;
+    msg.textContent = `${username}: ${message}`;
     log.appendChild(msg);
     log.scrollTop = log.scrollHeight;
   });
 
   const input = document.getElementById('chatInput');
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && input.value.trim() !== '') {
-      socket.emit('chatMessage', {
-        username: currentUsername,
-        message: input.value.trim()
-      });
-      input.value = '';
-    }
-  });
+  if (input) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && input.value.trim() !== '') {
+        socket.emit('chatMessage', {
+          username: currentUsername,
+          message: input.value.trim()
+        });
+        input.value = '';
+      }
+    });
+  }
+}
+
+function startGameAfterLogin() {
+  document.getElementById('authContainer').style.display = 'none';
+  initSocket();
+  loop();
 }
 
 setupKeyboard(keys);
 
-// Login/signup handlers
+// 🔐 Login/signup handlers
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('loginUser').value;
