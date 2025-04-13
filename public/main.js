@@ -34,13 +34,10 @@ function draw() {
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
     if (chatBubbles[id]) {
-      drawBubble(p.x, p.y - 45, chatBubbles[id].text); // Bulle plus haut
+      drawBubble(p.x, p.y - 35, chatBubbles[id].text);
     }
   }
-  drawPlayer(ctx, player, currentUsername);
-  if (chatBubbles['self']) {
-    drawBubble(player.x, player.y - 45, chatBubbles['self'].text);
-  }
+  drawPlayer(ctx, player, currentUsername, keys.ArrowLeft || keys.ArrowRight);
 }
 
 function drawBubble(x, y, text) {
@@ -50,20 +47,13 @@ function drawBubble(x, y, text) {
   const metrics = ctx.measureText(text);
   const width = Math.min(metrics.width, maxWidth) + padding * 2;
   const height = 24;
-
   ctx.fillStyle = 'white';
   ctx.strokeStyle = '#333';
   ctx.lineWidth = 1;
-
   ctx.beginPath();
-  if (ctx.roundRect) {
-    ctx.roundRect(x + player.width / 2 - width / 2, y, width, height, 6);
-  } else {
-    ctx.rect(x + player.width / 2 - width / 2, y, width, height);
-  }
+  ctx.roundRect(x + player.width / 2 - width / 2, y, width, height, 6);
   ctx.fill();
   ctx.stroke();
-
   ctx.fillStyle = 'black';
   ctx.fillText(text, x + player.width / 2 - width / 2 + padding, y + 16);
 }
@@ -95,9 +85,10 @@ function initSocket() {
       log.appendChild(msg);
       log.scrollTop = log.scrollHeight;
     }
-    const bubbleId = id === socket.id ? 'self' : id;
-    chatBubbles[bubbleId] = { text: message, timer: Date.now() };
-    setTimeout(() => delete chatBubbles[bubbleId], 3000);
+    if (id) {
+      chatBubbles[id] = { text: message, timer: Date.now() };
+      setTimeout(() => delete chatBubbles[id], 3000);
+    }
   });
 
   const input = document.getElementById('chat-input');
