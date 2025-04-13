@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
   console.log(`🟢 Player connected: ${socket.id}`);
 
   socket.on('register', (data) => {
-    const username = typeof data.username === 'string' ? data.username : `guest_${Math.floor(Math.random() * 1000)}`;
+    const username = typeof data.username === 'string' && data.username.trim() !== '' ? data.username : `guest_${Math.floor(Math.random() * 1000)}`;
     players[socket.id] = {
       username,
       x: 100,
