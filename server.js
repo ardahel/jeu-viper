@@ -58,10 +58,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chatMessage', (msg) => {
-    if (players[socket.id]) {
-      const username = players[socket.id].username;
-      io.emit('chatMessage', { username, message: msg });
-    }
+    const username = players[socket.id]?.username || '???';
+    io.emit('chatMessage', { username, message: msg });
   });
 
   socket.on('disconnect', () => {
