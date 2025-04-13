@@ -34,32 +34,38 @@ function draw() {
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
     if (chatBubbles[id]) {
-      drawBubble(p.x, p.y - 35, chatBubbles[id].text);
+      drawBubble(p.x, p.y - 45, chatBubbles[id].text); // Bulle plus haut
     }
   }
   drawPlayer(ctx, player, currentUsername);
+  if (chatBubbles['self']) {
+    drawBubble(player.x, player.y - 45, chatBubbles['self'].text);
+  }
 }
 
 function drawBubble(x, y, text) {
   ctx.font = '12px Arial';
   const padding = 6;
-  const maxWidth = 160;
-  const textWidth = Math.min(ctx.measureText(text).width, maxWidth);
-  const bubbleWidth = textWidth + padding * 2;
-  const bubbleHeight = 20;
-  const bubbleX = x + player.width / 2 - bubbleWidth / 2;
-  const bubbleY = y - 8;
+  const maxWidth = 120;
+  const metrics = ctx.measureText(text);
+  const width = Math.min(metrics.width, maxWidth) + padding * 2;
+  const height = 24;
 
   ctx.fillStyle = 'white';
   ctx.strokeStyle = '#333';
   ctx.lineWidth = 1;
+
   ctx.beginPath();
-  ctx.rect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
+  if (ctx.roundRect) {
+    ctx.roundRect(x + player.width / 2 - width / 2, y, width, height, 6);
+  } else {
+    ctx.rect(x + player.width / 2 - width / 2, y, width, height);
+  }
   ctx.fill();
   ctx.stroke();
 
   ctx.fillStyle = 'black';
-  ctx.fillText(text, bubbleX + padding, bubbleY + 14);
+  ctx.fillText(text, x + player.width / 2 - width / 2 + padding, y + 16);
 }
 
 function loop() {
@@ -89,10 +95,9 @@ function initSocket() {
       log.appendChild(msg);
       log.scrollTop = log.scrollHeight;
     }
-    if (id) {
-      chatBubbles[id] = { text: message, timer: Date.now() };
-      setTimeout(() => delete chatBubbles[id], 3000);
-    }
+    const bubbleId = id === socket.id ? 'self' : id;
+    chatBubbles[bubbleId] = { text: message, timer: Date.now() };
+    setTimeout(() => delete chatBubbles[bubbleId], 3000);
   });
 
   const input = document.getElementById('chat-input');
