@@ -1,45 +1,52 @@
 // main.js
-import { player, keys, drawPlayer } from './player.js';
-import { bgImage } from './map.js';
+import { player as rawPlayer, keys, updatePlayer, drawPlayer } from './player.js';
+import { bgImage, platforms, gravity } from './map.js';
 import { setupKeyboard } from './game.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = 1024;
-canvas.height = 576;
-canvas.style.width = '1024px';
-canvas.style.height = '576px';
 
 let socket;
 let otherPlayers = {};
 let currentUsername = '';
 
+const player = { ...rawPlayer };
+Object.freeze(player); // Prevent console tampering
+
+function update() {
+  updatePlayer(rawPlayer, gravity, platforms, keys, canvas.height);
+  if (socket) {
+    socket.emit('move', {
+      x: rawPlayer.x,
+      y: rawPlayer.y,
+      username: currentUsername
+    });
+  }
+}
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   if (bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
-
   for (const p of Object.values(otherPlayers)) {
     ctx.fillStyle = 'blue';
-    ctx.fillRect(p.x, p.y, player.width, player.height);
+    ctx.fillRect(p.x, p.y, rawPlayer.width, rawPlayer.height);
     ctx.fillStyle = 'black';
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
   }
-
-  drawPlayer(ctx, player, currentUsername);
+  drawPlayer(ctx, rawPlayer, currentUsername);
 }
 
 function loop() {
+  update();
   draw();
   requestAnimationFrame(loop);
 }
 
 function initSocket() {
   socket = io();
-
   socket.emit('register', { username: currentUsername });
 
   socket.on('playersUpdate', (players) => {
@@ -47,9 +54,6 @@ function initSocket() {
     for (const [id, p] of Object.entries(players)) {
       if (p.username !== currentUsername) {
         otherPlayers[id] = p;
-      } else {
-        player.x = p.x;
-        player.y = p.y;
       }
     }
   });
@@ -74,18 +78,6 @@ function initSocket() {
       }
     });
   }
-
-  window.addEventListener('keydown', (e) => {
-    if (keys.hasOwnProperty(e.key)) {
-      socket.emit('keyInput', { key: e.key, pressed: true });
-    }
-  });
-
-  window.addEventListener('keyup', (e) => {
-    if (keys.hasOwnProperty(e.key)) {
-      socket.emit('keyInput', { key: e.key, pressed: false });
-    }
-  });
 }
 
 function startGameAfterLogin() {
@@ -148,6 +140,3 @@ document.getElementById('showLogin')?.addEventListener('click', () => {
   document.getElementById('signupForm').style.display = 'none';
   document.getElementById('loginForm').style.display = 'inline';
 });
-
-
-// test
