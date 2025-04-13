@@ -35,6 +35,9 @@ setupLoginRoute(app);
 app.use(express.static('public'));
 
 const players = {};
+const gravity = 0.4;
+const speed = 3;
+const jumpPower = -12;
 
 io.on('connection', (socket) => {
   console.log(`🟢 Player connected: ${socket.id}`);
@@ -59,17 +62,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('move', (pos) => {
-    const player = players[socket.id];
-    if (player) {
-      const speed = 3;
-      const jumpPower = -12;
-      const gravity = 0.4;
-
+  setInterval(() => {
+    for (const [id, player] of Object.entries(players)) {
       player.velocityY += gravity;
       player.grounded = false;
 
-      // simulate movement server-side
       if (player.keys?.ArrowLeft) player.velocityX = -speed;
       else if (player.keys?.ArrowRight) player.velocityX = speed;
       else player.velocityX = 0;
@@ -77,16 +74,19 @@ io.on('connection', (socket) => {
       player.x += player.velocityX;
       player.y += player.velocityY;
 
+      if (player.y >= 520 - player.height) { // sol
+        player.y = 520 - player.height;
+        player.velocityY = 0;
+        player.grounded = true;
+      }
+
       if (player.keys?.ArrowUp && player.grounded) {
         player.velocityY = jumpPower;
         player.grounded = false;
       }
-
-      player.x = pos.x;
-      player.y = pos.y;
-      io.emit('playersUpdate', players);
     }
-  });
+    io.emit('playersUpdate', players);
+  }, 1000 / 60);
 
   socket.on('chatMessage', (msg) => {
     const username = players[socket.id]?.username || '???';
