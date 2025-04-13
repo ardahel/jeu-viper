@@ -1,5 +1,14 @@
 // player.js
 
+const catIdle = new Image();
+catIdle.src = './cat.png';
+
+const catWalk1 = new Image();
+catWalk1.src = './walker1.png';
+
+const catWalk2 = new Image();
+catWalk2.src = './walker2.png';
+
 export const player = {
   x: 100,
   y: 100,
@@ -10,6 +19,8 @@ export const player = {
   speed: 3,
   jumpPower: -12,
   grounded: false,
+  frame: 0,
+  lastMoveTime: 0,
   color: 'red'
 };
 
@@ -52,11 +63,22 @@ export function updatePlayer(player, gravity, platforms, keys, canvasHeight) {
     player.y = 0;
     player.velocityY = 0;
   }
+
+  if (player.velocityX !== 0) {
+    if (Date.now() - player.lastMoveTime > 100) {
+      player.frame = (player.frame + 1) % 2;
+      player.lastMoveTime = Date.now();
+    }
+  }
 }
 
 export function drawPlayer(ctx, player, name = '') {
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
+  let sprite = catIdle;
+  if (player.velocityX !== 0) {
+    sprite = player.frame === 0 ? catWalk1 : catWalk2;
+  }
+
+  ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
 
   if (name) {
     ctx.fillStyle = 'black';
