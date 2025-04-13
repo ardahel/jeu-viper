@@ -1,13 +1,13 @@
 // player.js
 
-const catIdle = new Image();
-catIdle.src = './cat.png';
+const idleImage = new Image();
+idleImage.src = './cat.png';
 
-const catWalk1 = new Image();
-catWalk1.src = './walker1.png';
+const walk1Image = new Image();
+walk1Image.src = './walker1.png';
 
-const catWalk2 = new Image();
-catWalk2.src = './walker2.png';
+const walk2Image = new Image();
+walk2Image.src = './walker2.png';
 
 export const player = {
   x: 100,
@@ -19,15 +19,15 @@ export const player = {
   speed: 3,
   jumpPower: -12,
   grounded: false,
-  frame: 0,
-  lastMoveTime: 0,
-  color: 'red'
+  sprite: idleImage,
+  spriteFrame: 0,
+  frameCooldown: 0,
 };
 
 export const keys = {
   ArrowLeft: false,
   ArrowRight: false,
-  ArrowUp: false
+  ArrowUp: false,
 };
 
 export function updatePlayer(player, gravity, platforms, keys, canvasHeight) {
@@ -50,9 +50,16 @@ export function updatePlayer(player, gravity, platforms, keys, canvasHeight) {
     }
   }
 
-  if (keys.ArrowLeft) player.velocityX = -player.speed;
-  else if (keys.ArrowRight) player.velocityX = player.speed;
-  else player.velocityX = 0;
+  if (keys.ArrowLeft) {
+    player.velocityX = -player.speed;
+    handleWalkAnim(player);
+  } else if (keys.ArrowRight) {
+    player.velocityX = player.speed;
+    handleWalkAnim(player);
+  } else {
+    player.velocityX = 0;
+    player.sprite = idleImage;
+  }
 
   if (keys.ArrowUp && player.grounded) {
     player.velocityY = player.jumpPower;
@@ -63,27 +70,25 @@ export function updatePlayer(player, gravity, platforms, keys, canvasHeight) {
     player.y = 0;
     player.velocityY = 0;
   }
+}
 
-  if (player.velocityX !== 0) {
-    if (Date.now() - player.lastMoveTime > 100) {
-      player.frame = (player.frame + 1) % 2;
-      player.lastMoveTime = Date.now();
-    }
+function handleWalkAnim(player) {
+  if (player.frameCooldown <= 0) {
+    player.spriteFrame = (player.spriteFrame + 1) % 2;
+    player.sprite = player.spriteFrame === 0 ? walk1Image : walk2Image;
+    player.frameCooldown = 8;
+  } else {
+    player.frameCooldown--;
   }
 }
 
 export function drawPlayer(ctx, player, name = '') {
-  let sprite = catIdle;
-  if (player.velocityX !== 0) {
-    sprite = player.frame === 0 ? catWalk1 : catWalk2;
-  }
-
-  ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
+  ctx.drawImage(player.sprite, player.x, player.y, player.width, player.height);
 
   if (name) {
     ctx.fillStyle = 'black';
     ctx.font = '16px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(name, player.x + player.width / 2, player.y - 10);
+    ctx.fillText(name, player.x + player.width / 2, player.y - 5);
   }
 }
