@@ -19,7 +19,6 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
-// 🌍 CORS config pour frontend Render
 app.use(cors({
   origin: 'https://jeu-viper.onrender.com',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -28,25 +27,23 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
 await connectDB();
 
-// 🚏 monte les routes
 setupSignupRoute(app);
 setupLoginRoute(app);
-
-// 🎯 sert le dossier public avec le jeu HTML
 app.use(express.static('public'));
 
-// 🎮 WebSocket multijoueur
 const players = {};
 
 io.on('connection', (socket) => {
   console.log(`🟢 Player connected: ${socket.id}`);
 
   socket.on('register', (data) => {
-    players[socket.id] = { username: data.username, x: 100, y: 100 };
-    io.emit('playersUpdate', players);
+    players[socket.id] = {
+      username: data.username,
+      x: 100,
+      y: 100
+    };
   });
 
   socket.on('move', (pos) => {
