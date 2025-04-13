@@ -8,6 +8,7 @@ const ctx = canvas.getContext('2d');
 
 let socket;
 let otherPlayers = {};
+let myId = null;
 
 function update() {
   updatePlayer(player, gravity, platforms, keys, canvas.height);
@@ -26,7 +27,7 @@ function draw() {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
 
-  for (const p of Object.values(otherPlayers)) {
+  for (const [id, p] of Object.entries(otherPlayers)) {
     ctx.fillStyle = 'blue';
     ctx.fillRect(p.x, p.y, player.width, player.height);
     ctx.fillStyle = 'black';
@@ -46,12 +47,15 @@ function loop() {
 function initSocket() {
   socket = io();
 
-  socket.emit('register', { username: getUsername() });
+  socket.on('connect', () => {
+    myId = socket.id;
+    socket.emit('register', { username: getUsername() });
+  });
 
   socket.on('playersUpdate', (players) => {
     otherPlayers = {};
     for (const [id, p] of Object.entries(players)) {
-      if (p.username !== getUsername()) {
+      if (id !== myId) {
         otherPlayers[id] = p;
       }
     }
