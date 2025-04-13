@@ -1,5 +1,5 @@
 // main.js
-import { player as rawPlayer, keys, updatePlayer, drawPlayer } from './player.js';
+import { player, keys, updatePlayer, drawPlayer } from './player.js';
 import { bgImage, platforms, gravity } from './map.js';
 import { setupKeyboard } from './game.js';
 
@@ -10,15 +10,13 @@ let socket;
 let otherPlayers = {};
 let currentUsername = '';
 
-const player = { ...rawPlayer };
-Object.freeze(player); // Prevent console tampering
-
 function update() {
-  updatePlayer(rawPlayer, gravity, platforms, keys, canvas.height);
+  updatePlayer(player, gravity, platforms, keys, canvas.height);
+
   if (socket) {
     socket.emit('move', {
-      x: rawPlayer.x,
-      y: rawPlayer.y,
+      x: player.x,
+      y: player.y,
       username: currentUsername
     });
   }
@@ -26,17 +24,20 @@ function update() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   if (bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
+
   for (const p of Object.values(otherPlayers)) {
     ctx.fillStyle = 'blue';
-    ctx.fillRect(p.x, p.y, rawPlayer.width, rawPlayer.height);
+    ctx.fillRect(p.x, p.y, player.width, player.height);
     ctx.fillStyle = 'black';
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
   }
-  drawPlayer(ctx, rawPlayer, currentUsername);
+
+  drawPlayer(ctx, player, currentUsername);
 }
 
 function loop() {
@@ -47,6 +48,7 @@ function loop() {
 
 function initSocket() {
   socket = io();
+
   socket.emit('register', { username: currentUsername });
 
   socket.on('playersUpdate', (players) => {
@@ -84,13 +86,17 @@ function startGameAfterLogin() {
   document.getElementById('authContainer').style.display = 'none';
   canvas.style.display = 'block';
   initSocket();
-  loop();
+  bgImage.onload = () => loop();
+  if (bgImage.complete) loop();
 }
 
 setupKeyboard(keys);
-bgImage.onload = () => loop();
 
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+// Auth
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+
+loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('loginUser').value;
   const password = document.getElementById('loginPass').value;
@@ -110,7 +116,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   }
 });
 
-document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
+signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('signupUser').value;
   const password = document.getElementById('signupPass').value;
@@ -124,19 +130,19 @@ document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
   const data = await res.json();
   if (res.ok) {
     alert('Compte créé, connecte-toi maintenant');
-    document.getElementById('signupForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'inline';
+    signupForm.style.display = 'none';
+    loginForm.style.display = 'inline';
   } else {
     alert(data.message);
   }
 });
 
 document.getElementById('showSignup')?.addEventListener('click', () => {
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('signupForm').style.display = 'inline';
+  loginForm.style.display = 'none';
+  signupForm.style.display = 'inline';
 });
 
 document.getElementById('showLogin')?.addEventListener('click', () => {
-  document.getElementById('signupForm').style.display = 'none';
-  document.getElementById('loginForm').style.display = 'inline';
+  signupForm.style.display = 'none';
+  loginForm.style.display = 'inline';
 });
