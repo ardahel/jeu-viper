@@ -10,17 +10,6 @@ let socket;
 let otherPlayers = {};
 let currentUsername = '';
 
-function update() {
-  updatePlayer(player, gravity, platforms, keys, canvas.height);
-  if (socket) {
-    socket.emit('move', {
-      x: player.x,
-      y: player.y,
-      username: currentUsername
-    });
-  }
-}
-
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (bgImage.complete) {
@@ -37,7 +26,7 @@ function draw() {
 }
 
 function loop() {
-  update();
+  updatePlayer(player, gravity, platforms, keys, canvas.height);
   draw();
   requestAnimationFrame(loop);
 }
@@ -75,6 +64,11 @@ function initSocket() {
       }
     });
   }
+
+  // Envoie les touches au serveur régulièrement
+  setInterval(() => {
+    socket.emit('keyInput', keys);
+  }, 1000 / 60);
 }
 
 function startGameAfterLogin() {

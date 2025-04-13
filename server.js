@@ -44,22 +44,53 @@ io.on('connection', (socket) => {
     players[socket.id] = {
       username,
       x: 100,
-      y: 100
+      y: 100,
+      velocityX: 0,
+      velocityY: 0,
+      grounded: false,
+      keys: {}
     };
     io.emit('playersUpdate', players);
   });
 
-  socket.on('move', (pos) => {
+  socket.on('keyInput', (keys) => {
     if (players[socket.id]) {
-      players[socket.id].x = pos.x;
-      players[socket.id].y = pos.y;
+      players[socket.id].keys = keys;
+    }
+  });
+
+  socket.on('move', (pos) => {
+    const player = players[socket.id];
+    if (player) {
+      const speed = 3;
+      const jumpPower = -12;
+      const gravity = 0.4;
+
+      player.velocityY += gravity;
+      player.grounded = false;
+
+      // simulate movement server-side
+      if (player.keys?.ArrowLeft) player.velocityX = -speed;
+      else if (player.keys?.ArrowRight) player.velocityX = speed;
+      else player.velocityX = 0;
+
+      player.x += player.velocityX;
+      player.y += player.velocityY;
+
+      if (player.keys?.ArrowUp && player.grounded) {
+        player.velocityY = jumpPower;
+        player.grounded = false;
+      }
+
+      player.x = pos.x;
+      player.y = pos.y;
       io.emit('playersUpdate', players);
     }
   });
 
-  socket.on('chatMessage', ({ message }) => {
+  socket.on('chatMessage', (msg) => {
     const username = players[socket.id]?.username || '???';
-    io.emit('chatMessage', { username, message });
+    io.emit('chatMessage', { username, message: msg });
   });
 
   socket.on('disconnect', () => {
