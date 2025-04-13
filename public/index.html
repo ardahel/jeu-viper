@@ -9,97 +9,79 @@
       margin: 0 auto;
       background: #aef;
     }
+
     form {
       text-align: center;
       margin-top: 10px;
     }
-    input {
-      margin: 5px;
-      padding: 6px;
-    }
-    #chatbox {
+
+    #chatContainer {
       position: absolute;
       bottom: 10px;
       left: 10px;
-      width: 300px;
-      height: 150px;
+      width: 250px;
+      height: 140px;
       background: white;
-      border: 1px solid #aaa;
+      border: 1px solid #ccc;
       display: flex;
       flex-direction: column;
-      font-family: sans-serif;
-      font-size: 14px;
     }
-    #messages {
+
+    #chatMessages {
       flex: 1;
       overflow-y: auto;
       padding: 5px;
+      font-size: 12px;
     }
-    #chatForm {
-      display: flex;
-      border-top: 1px solid #ccc;
-    }
+
     #chatInput {
-      flex: 1;
-      border: none;
-      padding: 4px;
+      border-top: 1px solid #ccc;
+      padding: 5px;
     }
-    #chatInput:focus {
-      outline: none;
+
+    #chatInput input {
+      width: 100%;
+      padding: 5px;
     }
   </style>
 </head>
 <body>
-  <!-- 🔐 Auth Forms -->
-  <div id="authContainer" style="text-align: center">
-    <form id="loginForm">
-      <input type="text" id="loginUser" placeholder="Pseudo" required />
-      <input type="password" id="loginPass" placeholder="Mot de passe" required />
-      <button type="submit">Connexion</button>
-      <br />
-      <small><a href="#" id="showSignup">Créer un compte</a></small>
-    </form>
-    <form id="signupForm" style="display:none">
-      <input type="text" id="signupUser" placeholder="Pseudo" required />
-      <input type="password" id="signupPass" placeholder="Mot de passe" required />
-      <button type="submit">S'inscrire</button>
-      <br />
-      <small><a href="#" id="showLogin">J’ai déjà un compte</a></small>
+
+  <!-- ✅ Chatbox -->
+  <div id="chatContainer">
+    <div id="chatMessages"></div>
+    <form id="chatInput">
+      <input type="text" id="message" placeholder="Taper un message..." autocomplete="off" />
     </form>
   </div>
 
   <canvas id="gameCanvas" width="1024" height="576"></canvas>
-
-  <!-- 💬 Chat Box -->
-  <div id="chatbox">
-    <div id="messages"></div>
-    <form id="chatForm">
-      <input type="text" id="chatInput" placeholder="Taper un message..." autocomplete="off" />
-    </form>
-  </div>
-
+  
+  <!-- ✅ socket.io script AVANT ton main.js -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./main.js"></script>
+
   <script>
     const socket = io();
-    const chatForm = document.getElementById('chatForm');
-    const chatInput = document.getElementById('chatInput');
-    const messages = document.getElementById('messages');
+    const form = document.getElementById('chatInput');
+    const input = document.getElementById('message');
+    const messages = document.getElementById('chatMessages');
 
-    chatForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const msg = chatInput.value.trim();
-      if (msg) {
-        socket.emit('chatMessage', msg);
-        chatInput.value = '';
+    form.addEventListener('submit', (e) => {
+      e.preventDefault(); // ✅ Empêche reload
+      if (input.value.trim() !== '') {
+        socket.emit('chatMessage', input.value.trim());
+        input.value = '';
       }
     });
 
-    socket.on('chatMessage', ({ username, message }) => {
-      const msgEl = document.createElement('div');
-      msgEl.textContent = `${username}: ${message}`;
-      messages.appendChild(msgEl);
+    socket.on('chatMessage', (msg) => {
+      const div = document.createElement('div');
+      div.textContent = msg;
+      messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
     });
   </script>
+
 </body>
 </html>
