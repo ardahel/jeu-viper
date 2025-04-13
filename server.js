@@ -53,7 +53,8 @@ io.on('connection', (socket) => {
       players[socket.id] = {
         ...players[socket.id],
         x: pos.x,
-        y: pos.y
+        y: pos.y,
+        username: pos.username // fix: update username for correct display
       };
       io.emit('playersUpdate', players);
     }
