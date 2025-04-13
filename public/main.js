@@ -12,6 +12,7 @@ let currentUsername = '';
 
 function update() {
   updatePlayer(player, gravity, platforms, keys, canvas.height);
+
   if (socket) {
     socket.emit('move', {
       x: player.x,
@@ -23,9 +24,11 @@ function update() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   if (bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
+
   for (const p of Object.values(otherPlayers)) {
     ctx.fillStyle = 'blue';
     ctx.fillRect(p.x, p.y, player.width, player.height);
@@ -33,6 +36,7 @@ function draw() {
     ctx.font = '14px Arial';
     ctx.fillText(p.username, p.x, p.y - 5);
   }
+
   drawPlayer(ctx, player, currentUsername);
 }
 
@@ -40,14 +44,6 @@ function loop() {
   update();
   draw();
   requestAnimationFrame(loop);
-}
-
-function startGameAfterLogin() {
-  document.getElementById('authContainer').style.display = 'none';
-  setupKeyboard(keys);
-  initSocket();
-  bgImage.onload = () => loop();
-  if (bgImage.complete) loop();
 }
 
 function initSocket() {
@@ -68,7 +64,7 @@ function initSocket() {
     const log = document.getElementById('chatLog');
     if (log) {
       const msg = document.createElement('div');
-      msg.textContent = `${username} : ${message}`;
+      msg.textContent = `${username}: ${message}`;
       log.appendChild(msg);
       log.scrollTop = log.scrollHeight;
     }
@@ -88,66 +84,63 @@ function initSocket() {
   }
 }
 
-// Login/signup handlers
-const loginForm = document.getElementById('loginForm');
-if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('loginUser').value;
-    const password = document.getElementById('loginPass').value;
+function startGameAfterLogin() {
+  document.getElementById('authContainer').style.display = 'none';
+  canvas.style.display = 'block';
+  initSocket();
+  loop();
+}
 
-    const res = await fetch('https://jeu-viper.onrender.com/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
+setupKeyboard(keys);
+bgImage.onload = () => loop();
 
-    const data = await res.json();
-    if (res.ok) {
-      currentUsername = data.username;
-      startGameAfterLogin();
-    } else {
-      alert(data.message);
-    }
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('loginUser').value;
+  const password = document.getElementById('loginPass').value;
+
+  const res = await fetch('https://jeu-viper.onrender.com/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
   });
-}
 
-const signupForm = document.getElementById('signupForm');
-if (signupForm) {
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('signupUser').value;
-    const password = document.getElementById('signupPass').value;
+  const data = await res.json();
+  if (res.ok) {
+    currentUsername = data.username;
+    startGameAfterLogin();
+  } else {
+    alert(data.message);
+  }
+});
 
-    const res = await fetch('https://jeu-viper.onrender.com/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
+document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('signupUser').value;
+  const password = document.getElementById('signupPass').value;
 
-    const data = await res.json();
-    if (res.ok) {
-      alert('Compte créé, connecte-toi maintenant');
-      document.getElementById('signupForm').style.display = 'none';
-      document.getElementById('loginForm').style.display = 'inline';
-    } else {
-      alert(data.message);
-    }
+  const res = await fetch('https://jeu-viper.onrender.com/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
   });
-}
 
-const showSignup = document.getElementById('showSignup');
-if (showSignup) {
-  showSignup.onclick = () => {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('signupForm').style.display = 'inline';
-  };
-}
-
-const showLogin = document.getElementById('showLogin');
-if (showLogin) {
-  showLogin.onclick = () => {
+  const data = await res.json();
+  if (res.ok) {
+    alert('Compte créé, connecte-toi maintenant');
     document.getElementById('signupForm').style.display = 'none';
     document.getElementById('loginForm').style.display = 'inline';
-  };
-}
+  } else {
+    alert(data.message);
+  }
+});
+
+document.getElementById('showSignup')?.addEventListener('click', () => {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'inline';
+});
+
+document.getElementById('showLogin')?.addEventListener('click', () => {
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'inline';
+});
