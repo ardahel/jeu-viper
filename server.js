@@ -1,3 +1,4 @@
+// server.js
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
@@ -44,12 +45,16 @@ io.on('connection', (socket) => {
       x: 100,
       y: 100
     };
+    io.emit('playersUpdate', players);
   });
 
   socket.on('move', (pos) => {
     if (players[socket.id]) {
-      players[socket.id].x = pos.x;
-      players[socket.id].y = pos.y;
+      players[socket.id] = {
+        ...players[socket.id],
+        x: pos.x,
+        y: pos.y
+      };
       io.emit('playersUpdate', players);
     }
   });
