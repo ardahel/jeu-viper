@@ -35,6 +35,7 @@ setupLoginRoute(app);
 app.use(express.static('public'));
 
 const players = {};
+const messages = [];
 
 io.on('connection', (socket) => {
   console.log(`🟢 Player connected: ${socket.id}`);
@@ -47,6 +48,7 @@ io.on('connection', (socket) => {
       y: 100
     };
     io.emit('playersUpdate', players);
+    socket.emit('chatHistory', messages);
   });
 
   socket.on('move', (pos) => {
@@ -58,11 +60,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chatMessage', (msg) => {
-    if (players[socket.id]) {
-      io.emit('chatMessage', {
-        username: players[socket.id].username,
-        message: msg
-      });
+    const player = players[socket.id];
+    if (player && msg.trim()) {
+      const message = { user: player.username, text: msg };
+      messages.push(message);
+      if (messages.length > 100) messages.shift();
+      io.emit('chatMessage', message);
     }
   });
 
