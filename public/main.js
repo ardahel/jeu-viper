@@ -78,37 +78,8 @@ function initSocket() {
     }
   });
 
-  socket.on('chatMessage', ({ username, message, id }) => {
-    const log = document.getElementById('chat-messages');
-    if (log) {
-      const msg = document.createElement('div');
-      msg.textContent = `${username}: ${message}`;
-      log.appendChild(msg);
-      log.scrollTop = log.scrollHeight;
-    }
-    if (id) {
-      chatBubbles[id] = { text: message, timer: Date.now() };
-      setTimeout(() => delete chatBubbles[id], 3000);
-    }
-  });
-
   // Call setupChat after socket is initialized and pass chatBubbles
   setupChat(socket, currentUsername, chatBubbles);
-
-  const input = document.getElementById('chat-input');
-  if (input) {
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && input.value.trim() !== '') {
-        const message = input.value.trim();
-        socket.emit('chatMessage', {
-          username: currentUsername,
-          message,
-          id: socket.id
-        });
-        input.value = '';
-      }
-    });
-  }
 }
 
 function startGameAfterLogin() {

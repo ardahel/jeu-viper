@@ -61,9 +61,9 @@ export function setupChat(socket, currentUsername, chatBubbles) {
         lastMessageTime = now;
         const message = input.value.trim();
         socket.emit('chatMessage', {
-          username: "currentUsername",
+          username: currentUsername,
           message,
-          id: "socket.id"
+          id: socket.id
         });
         input.value = '';
       }
