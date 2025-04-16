@@ -57,6 +57,16 @@ export class Game extends Scene
         settingsIcon.setInteractive();
         settingsIcon.setDepth(1);
 
+        // Icône Bag
+        const bagIcon = this.add.image(startX + (iconSize + iconSpacing) * 4, iconY, 'bag');
+        bagIcon.setScale(0.2);
+        bagIcon.setInteractive();
+        bagIcon.setDepth(1);
+        bagIcon.on('pointerdown', () => {
+            this.scene.pause();
+            this.scene.launch('Inventory');
+        });
+
         // Configuration des contrôles
         this.cursors = this.input.keyboard.createCursorKeys();
 

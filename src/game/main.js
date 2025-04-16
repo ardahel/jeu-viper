@@ -1,6 +1,7 @@
 import { Game } from './scenes/Game';
 import { GameTwo } from './scenes/GameTwo';
 import { Shop } from './scenes/Shop';
+import { Inventory } from './scenes/Inventory';
 import Phaser from 'phaser';
 import { Preloader } from './scenes/Preloader';
 
@@ -22,7 +23,7 @@ const config = {
             debug: false
         }
     },
-    scene: [Preloader, Game, GameTwo, Shop]
+    scene: [Preloader, Game, GameTwo, Shop, Inventory]
 };
 
 const StartGame = (parent) => {

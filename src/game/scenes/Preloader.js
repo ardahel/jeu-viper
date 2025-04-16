@@ -36,6 +36,7 @@ export class Preloader extends Scene
         this.load.image('redo', 'assets/icons/redo.png');
         this.load.image('accounts', 'assets/icons/accounts.png');
         this.load.image('friends', 'assets/icons/friends.png');
+        this.load.image('bag', 'assets/icons/bag.png');
         this.load.image('settings', 'assets/icons/settings.png');
         this.load.image('gold', 'assets/icons/gold.png');
     }
