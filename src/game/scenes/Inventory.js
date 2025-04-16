@@ -5,6 +5,12 @@ export class Inventory extends Scene
     constructor ()
     {
         super('Inventory');
+        this.username = '';
+        this.inventory = [];
+    }
+
+    init(data) {
+        this.username = data.username || '';
     }
 
     create ()
@@ -33,15 +39,49 @@ export class Inventory extends Scene
             this.scene.stop();
         });
 
-        // Liste des items dans l'inventaire
-        const items = [
-            { name: 'Potion de Vie', quantity: 2, icon: '❤️' },
-            { name: 'Potion de Force', quantity: 1, icon: '💪' },
-            { name: 'Potion de Vitesse', quantity: 3, icon: '⚡' }
-        ];
+        // Récupérer l'inventaire depuis la base de données
+        this.fetchInventory().then(() => {
+            this.displayItems(inventoryPanel);
+        });
+    }
 
-        // Afficher les items
-        items.forEach((item, index) => {
+    async fetchInventory() {
+        try {
+            const response = await fetch(`http://localhost:3000/inventory/${this.username}`);
+            if (response.ok) {
+                const data = await response.json();
+                this.inventory = data.inventory || [];
+            } else {
+                console.error('Erreur lors de la récupération de l\'inventaire');
+                // Utiliser des items par défaut en cas d'erreur
+                this.inventory = [
+                    { name: 'Potion de Vie', quantity: 2, icon: '❤️' },
+                    { name: 'Potion de Force', quantity: 1, icon: '💪' },
+                    { name: 'Potion de Vitesse', quantity: 3, icon: '⚡' }
+                ];
+            }
+        } catch (error) {
+            console.error('Erreur lors de la récupération de l\'inventaire:', error);
+            // Utiliser des items par défaut en cas d'erreur
+            this.inventory = [
+                { name: 'Potion de Vie', quantity: 2, icon: '❤️' },
+                { name: 'Potion de Force', quantity: 1, icon: '💪' },
+                { name: 'Potion de Vitesse', quantity: 3, icon: '⚡' }
+            ];
+        }
+    }
+
+    displayItems(inventoryPanel) {
+        if (this.inventory.length === 0) {
+            // Afficher un message si l'inventaire est vide
+            this.add.text(inventoryPanel.x + 150, 200, 'Inventaire vide', {
+                fontSize: '24px',
+                fill: '#ffffff'
+            }).setOrigin(0.5);
+            return;
+        }
+
+        this.inventory.forEach((item, index) => {
             const y = 100 + (index * 100);
             
             // Fond de l'item
@@ -88,8 +128,23 @@ export class Inventory extends Scene
             });
 
             useButton.on('pointerdown', () => {
-                console.log(`Utilisation de ${item.name}`);
+                this.useItem(item);
             });
+        });
+    }
+
+    useItem(item) {
+        // Afficher un message de confirmation
+        const confirmText = this.add.text(this.scale.width / 2, this.scale.height / 2, `Utilisation de ${item.name}`, {
+            fontSize: '32px',
+            fill: '#4CAF50',
+            fontWeight: 'bold'
+        });
+        confirmText.setOrigin(0.5);
+        
+        // Faire disparaître le message après 2 secondes
+        this.time.delayedCall(2000, () => {
+            confirmText.destroy();
         });
     }
 } 

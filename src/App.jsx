@@ -9,7 +9,7 @@ function App() {
 
     const handleLogin = (user) => {
         setUsername(user);
-        setGold(user.gold);
+        setGold(user.gold || 1000);
     };
 
     return (
@@ -22,7 +22,7 @@ function App() {
                         <img src="/assets/icons/gold.png" alt="Gold" className="gold-icon" />
                         <span>{gold}</span>
                     </div>
-                    <PhaserGame />
+                    <PhaserGame username={username} gold={gold} />
                 </>
             )}
         </div>

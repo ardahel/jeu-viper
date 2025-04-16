@@ -5,6 +5,13 @@ export class Game extends Scene
     constructor ()
     {
         super('Game');
+        this.username = '';
+        this.gold = 0;
+    }
+
+    init(data) {
+        this.username = data.username || '';
+        this.gold = data.gold || 0;
     }
 
     create ()
@@ -36,7 +43,7 @@ export class Game extends Scene
         this.shopIcon.setDepth(1);
         this.shopIcon.on('pointerdown', () => {
             this.scene.pause();
-            this.scene.launch('Shop');
+            this.scene.launch('Shop', { username: this.username, gold: this.gold });
         });
 
         // Icône Accounts
@@ -64,7 +71,7 @@ export class Game extends Scene
         bagIcon.setDepth(1);
         bagIcon.on('pointerdown', () => {
             this.scene.pause();
-            this.scene.launch('Inventory');
+            this.scene.launch('Inventory', { username: this.username });
         });
 
         // Configuration des contrôles
