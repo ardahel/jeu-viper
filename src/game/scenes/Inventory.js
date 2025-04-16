@@ -14,6 +14,9 @@ export class Inventory extends Scene
     }
 
     create ()
+
+
+    // ceci est un test
     {
         // Fond semi-transparent
         const overlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.7);
