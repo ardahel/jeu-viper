@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'https://jeu-viper.onrender.com',
+    origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
     credentials: true
@@ -21,7 +21,7 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: 'https://jeu-viper.onrender.com',
+  origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
   credentials: true
@@ -32,7 +32,10 @@ await connectDB();
 
 setupSignupRoute(app);
 setupLoginRoute(app);
+
+// Servir les fichiers statiques
 app.use(express.static('public'));
+app.use('/src', express.static('src'));
 
 const players = {};
 
