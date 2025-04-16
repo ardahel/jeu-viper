@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <title>Jeu 2D Plateforme</title>
   <style>
+    body  {
+      margin: 0;
+      background: url('jeu1.png') no-repeat center center fixed;
+      background-size: cover;
+    } 
     canvas {
       display: block;
       margin: 0 auto;
@@ -19,8 +24,6 @@
     }
     #chat-container {
       position: absolute;
-      left: 10px;
-      bottom: 10px;
       width: 240px;
       height: 160px;
       background-color: white;
@@ -33,6 +36,7 @@
       padding: 5px;
       overflow-y: auto;
       font-size: 12px;
+      margin-top: 10px; /* Décale le texte un peu plus bas */
     }
     #chat-input {
       border: none;
@@ -89,5 +93,58 @@
 
   <script type="module" src="./main.js"></script>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const chatContainer = document.getElementById('chat-container');
+  
+    // Restaurer la position depuis le localStorage s'il y en a une
+    function restoreChatPosition() {
+      const savedX = localStorage.getItem('chatPosX');
+      const savedY = localStorage.getItem('chatPosY');
+      if (savedX && savedY) {
+        chatContainer.style.left = savedX + 'px';
+        chatContainer.style.top = savedY + 'px';
+      } else {
+        // Position par défaut si rien n’est sauvegardé
+        const canvasRect = canvas.getBoundingClientRect();
+        chatContainer.style.left = `${canvasRect.right - chatContainer.offsetWidth - 20}px`;
+        chatContainer.style.top = `${canvasRect.bottom - chatContainer.offsetHeight - 40}px`;
+      }
+    }
+  
+    // Glisser-déposer du chat
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+  
+    chatContainer.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      offsetX = e.clientX - chatContainer.offsetLeft;
+      offsetY = e.clientY - chatContainer.offsetTop;
+      chatContainer.style.cursor = 'move';
+    });
+  
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const newX = e.clientX - offsetX;
+        const newY = e.clientY - offsetY;
+        chatContainer.style.left = newX + 'px';
+        chatContainer.style.top = newY + 'px';
+      }
+    });
+  
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        chatContainer.style.cursor = 'default';
+        // Enregistrer la position
+        localStorage.setItem('chatPosX', parseInt(chatContainer.style.left));
+        localStorage.setItem('chatPosY', parseInt(chatContainer.style.top));
+      }
+    });
+  
+    window.addEventListener('load', restoreChatPosition);
+  </script>
 </body>
 </html>

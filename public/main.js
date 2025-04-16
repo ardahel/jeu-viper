@@ -2,7 +2,8 @@
 import { player, keys, updatePlayer, drawPlayer } from './player.js';
 import { bgImage, platforms, gravity } from './map.js';
 import { setupKeyboard } from './game.js';
-
+import { handleLogin, handleSignup, showSignupForm, showLoginForm } from './auth.js';
+import { setupChat } from './chat.js';
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -91,6 +92,9 @@ function initSocket() {
     }
   });
 
+  // Call setupChat after socket is initialized and pass chatBubbles
+  setupChat(socket, currentUsername, chatBubbles);
+
   const input = document.getElementById('chat-input');
   if (input) {
     input.addEventListener('keydown', (e) => {
@@ -117,18 +121,15 @@ function startGameAfterLogin() {
 setupKeyboard(keys);
 bgImage.onload = () => loop();
 
+// --- Authentication Event Listeners ---
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('loginUser').value;
   const password = document.getElementById('loginPass').value;
 
-  const res = await fetch('https://jeu-viper.onrender.com/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-
+  const res = await handleLogin(username, password);
   const data = await res.json();
+
   if (res.ok) {
     currentUsername = data.username;
     startGameAfterLogin();
@@ -142,28 +143,23 @@ document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
   const username = document.getElementById('signupUser').value;
   const password = document.getElementById('signupPass').value;
 
-  const res = await fetch('https://jeu-viper.onrender.com/signup', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-
+  const res = await handleSignup(username, password);
   const data = await res.json();
+
   if (res.ok) {
     alert('Compte créé, connecte-toi maintenant');
-    document.getElementById('signupForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'inline';
+    showLoginForm();
   } else {
     alert(data.message);
   }
 });
 
-document.getElementById('showSignup')?.addEventListener('click', () => {
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('signupForm').style.display = 'inline';
+document.getElementById('showSignup')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  showSignupForm();
 });
 
-document.getElementById('showLogin')?.addEventListener('click', () => {
-  document.getElementById('signupForm').style.display = 'none';
-  document.getElementById('loginForm').style.display = 'inline';
+document.getElementById('showLogin')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  showLoginForm();
 });

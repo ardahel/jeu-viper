@@ -1,5 +1,3 @@
-// player.js
-
 const idleImage = new Image();
 idleImage.src = './cat.png';
 
@@ -12,8 +10,8 @@ walk2Image.src = './walker2.png';
 export const player = {
   x: 100,
   y: 100,
-  width: 40,
-  height: 40,
+  width: 180,
+  height: 180,
   velocityX: 0,
   velocityY: 0,
   speed: 3,
@@ -22,6 +20,7 @@ export const player = {
   sprite: idleImage,
   spriteFrame: 0,
   frameCooldown: 0,
+  facingRight: true, 
 };
 
 export const keys = {
@@ -52,9 +51,11 @@ export function updatePlayer(player, gravity, platforms, keys, canvasHeight) {
 
   if (keys.ArrowLeft) {
     player.velocityX = -player.speed;
+    player.facingRight = false; 
     handleWalkAnim(player);
   } else if (keys.ArrowRight) {
     player.velocityX = player.speed;
+    player.facingRight = true; 
     handleWalkAnim(player);
   } else {
     player.velocityX = 0;
@@ -83,7 +84,15 @@ function handleWalkAnim(player) {
 }
 
 export function drawPlayer(ctx, player, name = '') {
-  ctx.drawImage(player.sprite, player.x, player.y, player.width, player.height);
+  
+  ctx.save(); 
+  if (!player.facingRight) {
+    ctx.scale(-1, 1); 
+    ctx.drawImage(player.sprite, -player.x - player.width, player.y, player.width, player.height); 
+  } else {
+    ctx.drawImage(player.sprite, player.x, player.y, player.width, player.height);
+  }
+  ctx.restore(); 
 
   if (name) {
     ctx.fillStyle = 'black';
