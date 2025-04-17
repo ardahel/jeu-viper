@@ -4,6 +4,7 @@ import connectDB from './config/db.js';
 import setupAuthRoutes from './routes/auth.js';
 import Item from './models/Item.js';
 import User from './models/User.js';
+import UserItem from './models/UserItem.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -90,15 +91,113 @@ app.post('/buy', async (req, res) => {
 app.get('/inventory/:username', async (req, res) => {
   try {
     const { username } = req.params;
+    console.log('Recherche de l\'inventaire pour:', username);
+    
+    // Trouver l'utilisateur
     const user = await User.findOne({ username });
+    console.log('Utilisateur trouvé:', user);
     
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur introuvable.' });
     }
     
-    res.json({ inventory: user.inventory });
+    // Récupérer l'inventaire avec les détails des items
+    const userItems = await UserItem.find({ userId: user._id })
+      .populate('itemId')
+      .lean();
+
+    // Formater les données pour le client
+    const inventory = userItems.map(userItem => ({
+      itemId: userItem.itemId._id,
+      name: userItem.itemId.name,
+      quantity: userItem.quantity,
+      isEquipped: userItem.isEquipped,
+      type: userItem.itemId.type,
+      rarity: userItem.itemId.rarity,
+      description: userItem.itemId.description,
+      currentDurability: userItem.currentDurability,
+      // Données spécifiques selon le type
+      ...(userItem.itemId.type === 'skin' ? userItem.itemId.skinData : {}),
+      ...(userItem.itemId.type === 'consumable' ? userItem.itemId.consumableData : {})
+    }));
+
+    console.log('Inventaire à envoyer:', inventory);
+    res.json({ inventory });
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'inventaire:', error);
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+});
+
+// Route pour ajouter un item spécifique à l'inventaire
+app.post('/add-item', async (req, res) => {
+  try {
+    const { username } = req.body;
+    
+    if (!username) {
+      return res.status(400).json({ message: 'Nom d\'utilisateur manquant.' });
+    }
+
+    // Trouver l'utilisateur
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    // Item à ajouter
+    const newItem = {
+      itemId: '68000ebc365fb4dc654b2a1f',
+      name: 'Skin Mage',
+      quantity: 1,
+      icon: '🧙'
+    };
+
+    // Vérifier si l'item existe déjà dans l'inventaire
+    const existingItem = user.inventory.find(i => i.itemId === newItem.itemId);
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      user.inventory.push(newItem);
+    }
+
+    // Sauvegarder les modifications
+    await user.save();
+
+    res.json({ 
+      message: 'Item ajouté avec succès ✅', 
+      inventory: user.inventory
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout de l\'item:', error);
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+});
+
+// Route pour réinitialiser l'inventaire d'un utilisateur
+app.post('/reset-inventory', async (req, res) => {
+  try {
+    const { username } = req.body;
+    
+    if (!username) {
+      return res.status(400).json({ message: 'Nom d\'utilisateur manquant.' });
+    }
+
+    // Trouver l'utilisateur
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    // Réinitialiser l'inventaire
+    user.inventory = [];
+    await user.save();
+
+    res.json({ 
+      message: 'Inventaire réinitialisé ✅',
+      inventory: user.inventory
+    });
+  } catch (error) {
+    console.error('Erreur lors de la réinitialisation de l\'inventaire:', error);
     res.status(500).json({ message: 'Erreur serveur.' });
   }
 });

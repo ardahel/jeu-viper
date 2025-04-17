@@ -11,6 +11,7 @@ export class Inventory extends Scene
 
     init(data) {
         this.username = data.username || '';
+        console.log('Username dans Inventory:', this.username);
     }
 
     create ()
@@ -43,34 +44,28 @@ export class Inventory extends Scene
         });
 
         // Récupérer l'inventaire depuis la base de données
+        console.log('Tentative de récupération de l\'inventaire pour:', this.username);
         this.fetchInventory().then(() => {
+            console.log('Inventaire reçu:', this.inventory);
             this.displayItems(inventoryPanel);
         });
     }
 
     async fetchInventory() {
         try {
+            console.log('Appel API vers:', `http://localhost:3000/inventory/${this.username}`);
             const response = await fetch(`http://localhost:3000/inventory/${this.username}`);
             if (response.ok) {
                 const data = await response.json();
+                console.log('Données reçues du serveur:', data);
                 this.inventory = data.inventory || [];
             } else {
                 console.error('Erreur lors de la récupération de l\'inventaire');
-                // Utiliser des items par défaut en cas d'erreur
-                this.inventory = [
-                    { name: 'Potion de Vie', quantity: 2, icon: '❤️' },
-                    { name: 'Potion de Force', quantity: 1, icon: '💪' },
-                    { name: 'Potion de Vitesse', quantity: 3, icon: '⚡' }
-                ];
+                this.inventory = [];
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de l\'inventaire:', error);
-            // Utiliser des items par défaut en cas d'erreur
-            this.inventory = [
-                { name: 'Potion de Vie', quantity: 2, icon: '❤️' },
-                { name: 'Potion de Force', quantity: 1, icon: '💪' },
-                { name: 'Potion de Vitesse', quantity: 3, icon: '⚡' }
-            ];
+            this.inventory = [];
         }
     }
 
