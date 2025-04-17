@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import './Auth.css';
 
-const API_URL = import.meta.env.PROD 
-  ? 'https://jeu-viper.com/api' 
-  : '';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function Auth({ onLogin }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -18,7 +16,8 @@ export default function Auth({ onLogin }) {
         setMessage('');
 
         try {
-            const response = await fetch(`${API_URL}/auth/${isLogin ? 'login' : 'signup'}`, {
+            console.log('URL de l\'API:', `${API_URL}/api/auth/${isLogin ? 'login' : 'signup'}`);
+            const response = await fetch(`${API_URL}/api/auth/${isLogin ? 'login' : 'signup'}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
