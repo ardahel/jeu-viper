@@ -43,7 +43,7 @@ export class Preloader extends Scene
 
     create ()
     {
-        // Start the Game scene
-        this.scene.start('Game');
+        // Start the Game scene with the username 'root'
+        this.scene.start('Game', { username: 'root' });
     }
 }
