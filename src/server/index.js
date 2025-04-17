@@ -1,10 +1,15 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import setupAuthRoutes from './routes/auth.js';
 import Item from './models/Item.js';
 import User from './models/User.js';
 import UserItem from './models/UserItem.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +17,13 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Servir les fichiers statiques en production
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '../../dist');
+  app.use(express.static(distPath));
+  console.log('Serving static files from:', distPath);
+}
 
 // Connexion à la base de données
 connectDB();
@@ -206,6 +218,13 @@ app.post('/reset-inventory', async (req, res) => {
 app.get('/', (req, res) => {
     res.json({ message: 'API de jeu 2D opérationnelle ✅' });
 });
+
+// Route pour gérer toutes les autres requêtes en production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../dist/index.html'));
+  });
+}
 
 // Démarrage du serveur
 app.listen(PORT, () => {
