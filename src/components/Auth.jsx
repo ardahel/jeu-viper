@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import './Auth.css';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export default function Auth({ onLogin }) {
     const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState('');
@@ -14,7 +16,7 @@ export default function Auth({ onLogin }) {
         setMessage('');
 
         try {
-            const response = await fetch(`/api/auth/${isLogin ? 'login' : 'signup'}`, {
+            const response = await fetch(`${API_URL}/api/auth/${isLogin ? 'login' : 'signup'}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
