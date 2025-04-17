@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
-import setupAuthRoutes from './routes/auth.js';
+import authRoutes from './routes/auth.js';
 import Item from './models/Item.js';
 import User from './models/User.js';
 import UserItem from './models/UserItem.js';
@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Routes API
-app.use('/api', setupAuthRoutes(express.Router()));
+app.use('/api/auth', authRoutes);
 
 // Route pour récupérer les items
 app.get('/api/items', async (req, res) => {
