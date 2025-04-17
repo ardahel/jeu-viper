@@ -21,6 +21,13 @@ app.use(express.json());
 // Connexion à la base de données
 connectDB();
 
+// En production, servir les fichiers statiques avant les routes API
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '../../dist');
+  app.use(express.static(distPath));
+  console.log('Serving static files from:', distPath);
+}
+
 // Routes API
 app.use('/api/auth', authRoutes);
 
@@ -212,16 +219,13 @@ app.get('/api/status', (req, res) => {
   res.json({ message: 'API de jeu 2D opérationnelle ✅' });
 });
 
-// Servir les fichiers statiques en production
+// En production, toutes les autres routes renvoient index.html
 if (process.env.NODE_ENV === 'production') {
-  // Servir les fichiers statiques
-  const distPath = path.join(__dirname, '../../dist');
-  app.use(express.static(distPath));
-  console.log('Serving static files from:', distPath);
-
-  // Route catch-all pour l'application React
-  app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../dist/index.html'));
+  app.use((req, res, next) => {
+    if (!req.path.startsWith('/api')) {
+      return res.sendFile(path.join(__dirname, '../../dist/index.html'));
+    }
+    next();
   });
 }
 
