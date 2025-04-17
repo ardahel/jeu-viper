@@ -14,7 +14,7 @@ export default function Auth({ onLogin }) {
         setMessage('');
 
         try {
-            const response = await fetch(`http://localhost:3000/${isLogin ? 'login' : 'signup'}`, {
+            const response = await fetch(`/api/auth/${isLogin ? 'login' : 'signup'}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -30,13 +30,13 @@ export default function Auth({ onLogin }) {
 
             setMessage(data.message);
             if (isLogin) {
-                onLogin(username);
+                onLogin(data.user);
             } else {
                 setIsLogin(true);
                 setMessage('Compte créé ! Vous pouvez maintenant vous connecter.');
             }
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Une erreur est survenue');
         }
     };
 

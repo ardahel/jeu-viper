@@ -8,7 +8,7 @@ function App() {
     const [gold, setGold] = useState(1000);
 
     const handleLogin = (user) => {
-        setUsername(user);
+        setUsername(user.username);
         setGold(user.gold || 1000);
     };
 
