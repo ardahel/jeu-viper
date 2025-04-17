@@ -53,8 +53,8 @@ export class Inventory extends Scene
 
     async fetchInventory() {
         try {
-            console.log('Appel API vers:', `http://localhost:3000/inventory/${this.username}`);
-            const response = await fetch(`http://localhost:3000/inventory/${this.username}`);
+            console.log('Appel API vers:', `/api/inventory/${this.username}`);
+            const response = await fetch(`/api/inventory/${this.username}`);
             if (response.ok) {
                 const data = await response.json();
                 console.log('Données reçues du serveur:', data);

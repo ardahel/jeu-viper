@@ -18,6 +18,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Connexion à la base de données
+connectDB();
+
 // Servir les fichiers statiques en production
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '../../dist');
@@ -25,14 +28,11 @@ if (process.env.NODE_ENV === 'production') {
   console.log('Serving static files from:', distPath);
 }
 
-// Connexion à la base de données
-connectDB();
-
-// Routes
-setupAuthRoutes(app);
+// Routes API
+app.use('/api', setupAuthRoutes(express.Router()));
 
 // Route pour récupérer les items
-app.get('/items', async (req, res) => {
+app.get('/api/items', async (req, res) => {
   try {
     const items = await Item.find();
     console.log('Items trouvés:', items);
@@ -44,7 +44,7 @@ app.get('/items', async (req, res) => {
 });
 
 // Route pour acheter un item
-app.post('/buy', async (req, res) => {
+app.post('/api/buy', async (req, res) => {
   try {
     const { username, itemId } = req.body;
     
@@ -100,7 +100,7 @@ app.post('/buy', async (req, res) => {
 });
 
 // Route pour récupérer l'inventaire
-app.get('/inventory/:username', async (req, res) => {
+app.get('/api/inventory/:username', async (req, res) => {
   try {
     const { username } = req.params;
     console.log('Recherche de l\'inventaire pour:', username);
@@ -142,7 +142,7 @@ app.get('/inventory/:username', async (req, res) => {
 });
 
 // Route pour ajouter un item spécifique à l'inventaire
-app.post('/add-item', async (req, res) => {
+app.post('/api/add-item', async (req, res) => {
   try {
     const { username } = req.body;
     
@@ -186,7 +186,7 @@ app.post('/add-item', async (req, res) => {
 });
 
 // Route pour réinitialiser l'inventaire d'un utilisateur
-app.post('/reset-inventory', async (req, res) => {
+app.post('/api/reset-inventory', async (req, res) => {
   try {
     const { username } = req.body;
     
@@ -214,12 +214,12 @@ app.post('/reset-inventory', async (req, res) => {
   }
 });
 
-// Route de test
-app.get('/', (req, res) => {
-    res.json({ message: 'API de jeu 2D opérationnelle ✅' });
+// Route API de test
+app.get('/api/status', (req, res) => {
+  res.json({ message: 'API de jeu 2D opérationnelle ✅' });
 });
 
-// Route pour gérer toutes les autres requêtes en production
+// En production, toutes les autres routes servent l'application React
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../../dist/index.html'));
@@ -228,5 +228,5 @@ if (process.env.NODE_ENV === 'production') {
 
 // Démarrage du serveur
 app.listen(PORT, () => {
-    console.log(`[🚀] Serveur démarré sur le port ${PORT}`);
+  console.log(`[🚀] Serveur démarré sur le port ${PORT}`);
 }); 

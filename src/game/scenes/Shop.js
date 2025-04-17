@@ -61,7 +61,7 @@ export class Shop extends Scene
     async fetchItems() {
         try {
             console.log('Récupération des items depuis le serveur...');
-            const response = await fetch('http://localhost:3000/items');
+            const response = await fetch('/api/items');
             if (response.ok) {
                 this.items = await response.json();
                 console.log('Items récupérés:', this.items);
@@ -159,7 +159,7 @@ export class Shop extends Scene
 
     async buyItem(item) {
         try {
-            const response = await fetch('http://localhost:3000/buy', {
+            const response = await fetch('/api/buy', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
