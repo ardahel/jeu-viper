@@ -26,7 +26,8 @@
       "start": "NODE_ENV=production node src/server/index.js",
       "dev-nolog": "vite --config vite/config.dev.mjs",
       "build-nolog": "vite build --config vite/config.prod.mjs",
-      "init-db": "node scripts/init-db.js"
+      "init-db": "node scripts/init-db.js",
+      "server": "node src/server/index.js"
     },
     "dependencies": {
       "bcrypt": "^5.1.1",
