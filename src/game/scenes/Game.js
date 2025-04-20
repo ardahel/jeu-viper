@@ -1,4 +1,7 @@
 import { Scene } from 'phaser';
+import { initPlayer, updatePlayerMovement } from '../utils/playerUtils.js';
+import { createIcons } from '../utils/uiUtils.js';
+import { playerConfig } from '../config/playerConfig.js';
 
 export class Game extends Scene
 {
@@ -26,100 +29,46 @@ export class Game extends Scene
         this.map.setOrigin(0.5, 0.5);
         this.map.setScale(1.2); // Réduction de la taille de la carte
 
-        // Ajout du personnage
-        this.player = this.add.sprite(this.scale.width / 2, this.scale.height / 2 - 100, 'cat');
-        this.player.setScale(0.2);
+        // Initialisation du joueur avec les utilitaires
+        const playerCenterX = this.scale.width / 2;
+        const playerCenterY = this.scale.height / 2 - 100;
+        const playerData = initPlayer(this, playerCenterX, playerCenterY);
+        
+        this.player = playerData.player;
+        this.playerVelocity = playerData.playerVelocity;
+        this.isGrounded = playerData.isGrounded;
 
-        // Barre d'icônes en haut
-        const iconSize = 25;
-        const iconSpacing = 45;
-        const startX = 285;
-        const iconY = 35;
-
-        // Icône Shop
-        this.shopIcon = this.add.image(startX, iconY, 'shop-icon');
-        this.shopIcon.setScale(0.2);
-        this.shopIcon.setInteractive();
-        this.shopIcon.setDepth(1);
-        this.shopIcon.on('pointerdown', () => {
-            this.scene.pause();
-            this.scene.launch('Shop', { username: this.username, gold: this.gold });
-        });
-
-        // Icône Accounts
-        const accountsIcon = this.add.image(startX + iconSize + iconSpacing, iconY, 'accounts');
-        accountsIcon.setScale(0.2);
-        accountsIcon.setInteractive();
-        accountsIcon.setDepth(1);
-
-        // Icône Friends
-        const friendsIcon = this.add.image(startX + (iconSize + iconSpacing) * 2, iconY, 'friends');
-        friendsIcon.setScale(0.2);
-        friendsIcon.setInteractive();
-        friendsIcon.setDepth(1);
-
-        // Icône Settings
-        const settingsIcon = this.add.image(startX + (iconSize + iconSpacing) * 3, iconY, 'settings');
-        settingsIcon.setScale(0.2);
-        settingsIcon.setInteractive();
-        settingsIcon.setDepth(1);
-
-        // Icône Bag
-        const bagIcon = this.add.image(startX + (iconSize + iconSpacing) * 4, iconY, 'bag');
-        bagIcon.setScale(0.2);
-        bagIcon.setInteractive();
-        bagIcon.setDepth(1);
-        bagIcon.on('pointerdown', () => {
-            this.scene.pause();
-            this.scene.launch('Inventory', { username: this.username });
-        });
+        // Création des icônes avec les utilitaires
+        const iconCallbacks = {
+            shop: () => {
+                this.scene.pause();
+                this.scene.launch('Shop', { username: this.username, gold: this.gold });
+            },
+            bag: () => {
+                this.scene.pause();
+                this.scene.launch('Inventory', { username: this.username });
+            }
+        };
+        
+        this.icons = createIcons(this, iconCallbacks);
 
         // Configuration des contrôles
         this.cursors = this.input.keyboard.createCursorKeys();
-
-        // Variables pour le mouvement
-        this.playerSpeed = 600;
-        this.jumpForce = -500;
-        this.gravity = 1500;
-        this.playerVelocity = { x: 0, y: 0 };
-        this.isGrounded = false;
-
-        // Ajout de la physique au joueur
-        this.physics.add.existing(this.player);
-        this.player.body.setCollideWorldBounds(true);
     }
 
     update() {
-        // Gestion du mouvement horizontal
-        if (this.cursors.left.isDown) {
-            this.playerVelocity.x = -this.playerSpeed;
-            this.player.flipX = true;
-        } else if (this.cursors.right.isDown) {
-            this.playerVelocity.x = this.playerSpeed;
-            this.player.flipX = false;
-        } else {
-            this.playerVelocity.x = 0;
-        }
-
-        // Gestion du saut
-        if (this.cursors.up.isDown && this.isGrounded) {
-            this.playerVelocity.y = this.jumpForce;
-            this.isGrounded = false;
-        }
-
-        // Application de la gravité
-        this.playerVelocity.y += this.gravity * (1/60);
-
-        // Mise à jour de la position
-        this.player.x += this.playerVelocity.x * (1/60);
-        this.player.y += this.playerVelocity.y * (1/60);
-
-        // Collision avec le sol
-        if (this.player.y > this.scale.height / 2 + 100) {
-            this.player.y = this.scale.height / 2 + 100;
-            this.playerVelocity.y = 0;
-            this.isGrounded = true;
-        }
+        // Mise à jour du mouvement du joueur avec les utilitaires
+        const movementResult = updatePlayerMovement({
+            scene: this,
+            player: this.player,
+            playerVelocity: this.playerVelocity,
+            isGrounded: this.isGrounded,
+            cursors: this.cursors,
+            groundY: playerConfig.groundY
+        });
+        
+        this.playerVelocity = movementResult.playerVelocity;
+        this.isGrounded = movementResult.isGrounded;
 
         // Limites de la carte
         const mapBounds = {

@@ -1,4 +1,7 @@
 import { Scene } from 'phaser';
+import { initPlayer, updatePlayerMovement } from '../utils/playerUtils.js';
+import { createIcons } from '../utils/uiUtils.js';
+import { playerConfig } from '../config/playerConfig.js';
 
 export class GameTwo extends Scene
 {
@@ -24,23 +27,29 @@ export class GameTwo extends Scene
         this.map.setOrigin(0.5, 0.5);
         this.map.setScale(1.2); // Même scale que la première map
 
-        // Ajout du personnage à la position de téléportation
-        this.player = this.add.sprite(this.playerX, this.scale.height / 2 - 100, 'cat');
-        this.player.setScale(0.2);
+        // Initialisation du joueur avec les utilitaires
+        const playerData = initPlayer(this, this.playerX, this.scale.height / 2 - 100);
+        
+        this.player = playerData.player;
+        this.playerVelocity = playerData.playerVelocity;
+        this.isGrounded = playerData.isGrounded;
+
+        // Création des icônes avec les utilitaires
+        const iconCallbacks = {
+            shop: () => {
+                this.scene.pause();
+                this.scene.launch('Shop', { username: this.username, gold: this.gold });
+            },
+            bag: () => {
+                this.scene.pause();
+                this.scene.launch('Inventory', { username: this.username });
+            }
+        };
+        
+        this.icons = createIcons(this, iconCallbacks);
 
         // Configuration des contrôles
         this.cursors = this.input.keyboard.createCursorKeys();
-
-        // Variables pour le mouvement
-        this.playerSpeed = 600;
-        this.jumpForce = -500;
-        this.gravity = 1000;
-        this.playerVelocity = { x: 0, y: 0 };
-        this.isGrounded = false;
-
-        // Ajout de la physique au joueur
-        this.physics.add.existing(this.player);
-        this.player.body.setCollideWorldBounds(true);
 
         // Ajuster la taille de la map pour qu'elle soit identique à la première
         const firstMapWidth = this.textures.get('map-foret').getSourceImage().width;
@@ -50,36 +59,18 @@ export class GameTwo extends Scene
     }
 
     update() {
-        // Gestion du mouvement horizontal
-        if (this.cursors.left.isDown) {
-            this.playerVelocity.x = -this.playerSpeed;
-            this.player.flipX = true;
-        } else if (this.cursors.right.isDown) {
-            this.playerVelocity.x = this.playerSpeed;
-            this.player.flipX = false;
-        } else {
-            this.playerVelocity.x = 0;
-        }
-
-        // Gestion du saut
-        if (this.cursors.up.isDown && this.isGrounded) {
-            this.playerVelocity.y = this.jumpForce;
-            this.isGrounded = false;
-        }
-
-        // Application de la gravité
-        this.playerVelocity.y += this.gravity * (1/60);
-
-        // Mise à jour de la position
-        this.player.x += this.playerVelocity.x * (1/60);
-        this.player.y += this.playerVelocity.y * (1/60);
-
-        // Collision avec le sol
-        if (this.player.y > this.scale.height / 2 + 100) {
-            this.player.y = this.scale.height / 2 + 100;
-            this.playerVelocity.y = 0;
-            this.isGrounded = true;
-        }
+        // Mise à jour du mouvement du joueur avec les utilitaires
+        const movementResult = updatePlayerMovement({
+            scene: this,
+            player: this.player,
+            playerVelocity: this.playerVelocity,
+            isGrounded: this.isGrounded,
+            cursors: this.cursors,
+            groundY: playerConfig.groundY
+        });
+        
+        this.playerVelocity = movementResult.playerVelocity;
+        this.isGrounded = movementResult.isGrounded;
 
         // Limites de la carte
         const mapBounds = {
