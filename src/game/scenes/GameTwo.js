@@ -32,9 +32,9 @@ export class GameTwo extends Scene
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // Variables pour le mouvement
-        this.playerSpeed = 400;
-        this.jumpForce = -400;
-        this.gravity = 800;
+        this.playerSpeed = 600;
+        this.jumpForce = -500;
+        this.gravity = 1000;
         this.playerVelocity = { x: 0, y: 0 };
         this.isGrounded = false;
 
