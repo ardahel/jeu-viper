@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PhaserGame from './game/PhaserGame';
 import Auth from './components/Auth';
+import Chat from './components/Chat';
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
                         <span>{gold}</span>
                     </div>
                     <PhaserGame username={username} gold={gold} />
+                    <Chat currentUser={{ id: 1, username: username }} />
                 </>
             )}
         </div>

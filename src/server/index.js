@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -20,6 +20,33 @@ app.use(express.json());
 
 // Connexion à la base de données
 connectDB();
+
+// Stockage temporaire des messages (à remplacer par une base de données dans un environnement de production)
+let messages = [];
+
+// Routes pour le chat
+app.get('/api/chat/messages', (req, res) => {
+    res.json(messages);
+});
+
+app.post('/api/chat/messages', (req, res) => {
+    const { content, userId, username, timestamp } = req.body;
+    
+    if (!content || !userId || !username) {
+        return res.status(400).json({ error: 'Données manquantes' });
+    }
+
+    const newMessage = {
+        id: Date.now(),
+        content,
+        userId,
+        username,
+        timestamp: timestamp || new Date().toISOString()
+    };
+
+    messages.push(newMessage);
+    res.status(201).json(newMessage);
+});
 
 // En production, servir les fichiers statiques avant les routes API
 if (process.env.NODE_ENV === 'production') {
